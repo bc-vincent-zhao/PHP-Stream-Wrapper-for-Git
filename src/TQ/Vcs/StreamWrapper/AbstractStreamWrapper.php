@@ -733,6 +733,12 @@ abstract class AbstractStreamWrapper
                 $repo   = $path->getRepository();
                 $info   = $repo->getObjectInfo($path->getLocalPath(), $path->getRef());
 
+                // path not found in git repo, should return false
+                // to indicate the file does not exist
+                if ($info['type'] === null) {
+                    return false;
+                }
+
                 $stat   = array(
                     'ino'       => 0,
                     'mode'      => $info['mode'],
