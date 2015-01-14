@@ -772,6 +772,34 @@ class Repository extends AbstractRepository
     }
 
     /**
+     * Finds the internal node hash that represents file or directory
+     * by searching the history tree starting at a given rev.
+     *
+     * @param   string  $file       The path to the file
+     * @param   string  $ref        The version ref
+     * @return  string  node hash or empty string if $file not found
+     */
+    public function findNode($file, $ref = 'HEAD')
+    {
+        /** @var $result CallResult */
+        $result = $this->getGit()->{'ls-tree'}($this->getRepositoryPath(), array(
+            $ref,
+            $file
+        ));
+        $result->assertSuccess(sprintf('Cannot ls-tree "%s" at "%s" from "%s"',
+            $file, $ref, $this->getRepositoryPath()
+        ));
+
+        $line = $result->getStdOut();
+
+        if (preg_match("#(tree|blob) ([a-f0-9]{40})#", $line, $matches)) {
+            return $matches[2];
+        }
+
+        return '';
+    }
+
+    /**
      * Returns information about an object at a given version
      *
      * The information returned is an array with the following structure
