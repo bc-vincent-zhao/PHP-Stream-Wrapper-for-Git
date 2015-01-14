@@ -442,15 +442,8 @@ abstract class AbstractStreamWrapper
         $this->fileBuffer->close();
         $this->fileBuffer   = null;
 
-        $repo   = $this->path->getRepository();
-        if ($repo->isDirty()) {
-            $repo->add(array($this->path->getFullPath()));
-            $commitMsg      = $this->getContextOption('commitMsg', null);
-            $author         = $this->getContextOption('author', null);
-            $repo->commit($commitMsg, array($this->path->getFullPath()), $author);
-        }
-
-        $this->path         = null;
+        $repo = $this->path->getRepository();
+        $this->path = null;
     }
 
     /**
