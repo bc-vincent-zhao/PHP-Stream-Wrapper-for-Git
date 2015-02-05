@@ -805,6 +805,23 @@ class Repository extends AbstractRepository
     }
 
     /**
+     * Gets the content of a blob at given hash
+     *
+     * @param  string $hash The git hash of a blob
+     * @return string
+     */
+    public function getBlobContent($hash)
+    {
+        /** @var $result CallResult */
+        $result = $this->getGit()->{'cat-file'}($this->getRepositoryPath(), array("-p", $hash));
+        $result->assertSuccess(sprintf('Cannot cat-file -p "%s" from "%s"',
+            $hash, $this->getRepositoryPath()
+        ));
+
+        return $result->getStdOut();
+    }
+
+    /**
      * Returns information about an object at a given version
      *
      * The information returned is an array with the following structure
