@@ -35,6 +35,7 @@ use TQ\Vcs\FileSystem;
 use TQ\Vcs\Repository\AbstractRepository;
 use TQ\Git\Cli\Binary;
 use TQ\Vcs\Cli\CallResult;
+use TQ\Vcs\Cli\CallException;
 
 /**
  * Provides access to a Git repository
