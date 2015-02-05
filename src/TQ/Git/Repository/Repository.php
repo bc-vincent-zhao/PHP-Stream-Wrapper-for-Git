@@ -775,9 +775,10 @@ class Repository extends AbstractRepository
      * Finds the internal node hash that represents file or directory
      * by searching the history tree starting at a given rev.
      *
-     * @param   string  $file       The path to the file
-     * @param   string  $ref        The version ref
-     * @return  string  node hash or empty string if $file not found
+     * @param   string  $file The path to the file
+     * @param   string  $ref  The version ref
+     * @return  array         array('mode'=>'', 'type'=>'', 'hash'=>'')
+     * @throws  CallException
      */
     public function findNode($file, $ref = 'HEAD')
     {
@@ -792,11 +793,15 @@ class Repository extends AbstractRepository
 
         $line = $result->getStdOut();
 
-        if (preg_match("#(tree|blob) ([a-f0-9]{40})#", $line, $matches)) {
-            return $matches[2];
+        if (preg_match("#^(?<mode>[0-9]{6})\s*(?<type>[a-z]+)\s*(?<hash>[a-f0-9]{40})#", $line, $matches)) {
+            return array(
+                'mode' => $matches['mode'],
+                'type' => $matches['type'],
+                'hash' => $matches['hash'],
+            );
         }
 
-        return '';
+        throw new CallException("ls-tree format doesn't match <mode> SP <type> SP <object> TAB <file>", $result);
     }
 
     /**
