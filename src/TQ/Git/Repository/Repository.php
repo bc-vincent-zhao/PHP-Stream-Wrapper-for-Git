@@ -35,6 +35,7 @@ use TQ\Vcs\FileSystem;
 use TQ\Vcs\Repository\AbstractRepository;
 use TQ\Git\Cli\Binary;
 use TQ\Vcs\Cli\CallResult;
+use TQ\Vcs\Cli\CallException;
 
 /**
  * Provides access to a Git repository
@@ -767,6 +768,56 @@ class Repository extends AbstractRepository
             $file, $ref, $this->getRepositoryPath()
         ));
 
+
+        return $result->getStdOut();
+    }
+
+    /**
+     * Finds the internal node hash that represents file or directory
+     * by searching the history tree starting at a given rev.
+     *
+     * @param   string  $file The path to the file
+     * @param   string  $ref  The version ref
+     * @return  array         array('mode'=>'', 'type'=>'', 'hash'=>'')
+     * @throws  CallException
+     */
+    public function findNode($file, $ref = 'HEAD')
+    {
+        /** @var $result CallResult */
+        $result = $this->getGit()->{'ls-tree'}($this->getRepositoryPath(), array(
+            $ref,
+            $file
+        ));
+        $result->assertSuccess(sprintf('Cannot ls-tree "%s" at "%s" from "%s"',
+            $file, $ref, $this->getRepositoryPath()
+        ));
+
+        $line = $result->getStdOut();
+
+        if (preg_match("#^(?<mode>[0-9]{6})\s*(?<type>[a-z]+)\s*(?<hash>[a-f0-9]{40})#", $line, $matches)) {
+            return array(
+                'mode' => $matches['mode'],
+                'type' => $matches['type'],
+                'hash' => $matches['hash'],
+            );
+        }
+
+        throw new CallException("ls-tree format doesn't match <mode> SP <type> SP <object> TAB <file>", $result);
+    }
+
+    /**
+     * Gets the content of a blob at given hash
+     *
+     * @param  string $hash The git hash of a blob
+     * @return string
+     */
+    public function getBlobContent($hash)
+    {
+        /** @var $result CallResult */
+        $result = $this->getGit()->{'cat-file'}($this->getRepositoryPath(), array("-p", $hash));
+        $result->assertSuccess(sprintf('Cannot cat-file -p "%s" from "%s"',
+            $hash, $this->getRepositoryPath()
+        ));
 
         return $result->getStdOut();
     }

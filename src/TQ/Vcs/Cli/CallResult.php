@@ -147,7 +147,7 @@ class CallResult
     public function getStdOut()
     {
         fseek($this->stdOut, 0, SEEK_SET);
-        return rtrim(stream_get_contents($this->stdOut));
+        return stream_get_contents($this->stdOut);
     }
 
     /**

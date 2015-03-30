@@ -442,15 +442,8 @@ abstract class AbstractStreamWrapper
         $this->fileBuffer->close();
         $this->fileBuffer   = null;
 
-        $repo   = $this->path->getRepository();
-        if ($repo->isDirty()) {
-            $repo->add(array($this->path->getFullPath()));
-            $commitMsg      = $this->getContextOption('commitMsg', null);
-            $author         = $this->getContextOption('author', null);
-            $repo->commit($commitMsg, array($this->path->getFullPath()), $author);
-        }
-
-        $this->path         = null;
+        $repo = $this->path->getRepository();
+        $this->path = null;
     }
 
     /**
@@ -739,6 +732,12 @@ abstract class AbstractStreamWrapper
             } else {
                 $repo   = $path->getRepository();
                 $info   = $repo->getObjectInfo($path->getLocalPath(), $path->getRef());
+
+                // path not found in git repo, should return false
+                // to indicate the file does not exist
+                if ($info['type'] === null) {
+                    return false;
+                }
 
                 $stat   = array(
                     'ino'       => 0,
