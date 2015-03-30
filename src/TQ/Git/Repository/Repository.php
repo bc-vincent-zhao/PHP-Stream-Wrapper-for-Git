@@ -783,6 +783,10 @@ class Repository extends AbstractRepository
      */
     public function findNode($file, $ref = 'HEAD')
     {
+        // make sure there's no trailing slash, which will list
+        // the child tree nodes rather than the tree node itself
+        $file = rtrim($file, "/");
+
         /** @var $result CallResult */
         $result = $this->getGit()->{'ls-tree'}($this->getRepositoryPath(), array(
             $ref,
